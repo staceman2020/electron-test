@@ -2,9 +2,9 @@ const { app, BrowserWindow } = require("electron");
 const { ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
-
+let win;
 function createWindow() {
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     title: "Claims Management",
     width: 800,
     height: 600,
@@ -45,11 +45,17 @@ function createWindow() {
 app.whenReady().then(createWindow);
 
 ipcMain.on("toMain", (event, args) => {
-  console.log("Got it");
-  fs.readFile("path/to/file", (error, data) => {
+  console.log("Got it " + JSON.stringify(args, null, 2));
+  fs.readFile("C:/data/scm/electron-omni/README.md", (error, data) => {
     // Do something with file contents
+    let responseObj = {
+      error: error,
+      data: data.toString(),
+    };
 
     // Send result back to renderer process
-    win.webContents.send("fromMain", responseObj);
+    setInterval(() => {
+      win.webContents.send("fromMain", responseObj);
+    }, 2000);
   });
 });
