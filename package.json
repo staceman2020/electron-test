@@ -10,5 +10,8 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.2.3"
+  },
+  "dependencies": {
+    "winax": "3.3.7"
   }
 }
