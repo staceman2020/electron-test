@@ -4,12 +4,14 @@ const path = require("path");
 const fs = require("fs");
 // var winax = require("winax");
 let winClaims;
-function createWindow() {
+let winTasks;
+function createClaimWindow(debugTools = false) {
   winClaims = new BrowserWindow({
     title: "Claims Management",
     width: 800,
     height: 600,
-
+    x: 0,
+    y: 0,
     webPreferences: {
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
@@ -19,24 +21,7 @@ function createWindow() {
   //win.loadFile("index.html");
   winClaims.loadURL("http://localhost:5180/claims/list").then(
     () => {
-      winClaims.webContents.openDevTools();
-      // win.webContents.on("did-start-navigation", (event, url) => {
-      //   console.log("Navigated to: " + url);
-      //   event.preventDefault();
-      // });
-      // win.webContents.on("did-finish-load", () => {});
-      // win.webContents.on("found-in-page", (result) => {
-      //   console.log("Found in page: " + JSON.stringify(result, null, 2));
-      // });
-
-      // win.webContents.executeJavaScript("alert('told you so');");
-      // setInterval(() => {
-      //   console.log("Sending ping");
-      //   win.webContents.findInPage("claim");
-      //   win.webContents.emit("message", "whoooooooh!");
-
-      //   // send("message", "whoooooooh!");
-      // }, 2000);
+      debugTools && winClaims.webContents.openDevTools();
     },
     () => {
       console.log("Window is ready");
@@ -44,25 +29,57 @@ function createWindow() {
   );
 }
 
-app.whenReady().then(createWindow);
+function createTaskWindow(debugTools = false) {
+  console.log("Creating Task Window ");
+  winTasks = new BrowserWindow({
+    title: "Task Management",
+    width: 800,
+    height: 600,
+    x: 801,
+    y: 0,
 
-ipcMain.on("toMain", (event, args) => {
+    webPreferences: {
+      nodeIntegration: true,
+      preload: path.join(__dirname, "preload.js"),
+    },
+  });
+
+  //win.loadFile("index.html");
+  winTasks.loadURL("http://localhost:5181/tasks/list").then(
+    () => {
+      debugTools && winTasks.webContents.openDevTools();
+    },
+    () => {
+      console.log("Window is ready");
+    }
+  );
+}
+
+let debugTools = true;
+
+app.whenReady().then(() => {
+  createClaimWindow(debugTools);
+  createTaskWindow(debugTools);
+});
+
+ipcMain.on("toChangeClaim", (event, args) => {
   console.log("Got it " + JSON.stringify(args, null, 2));
   // var con = new winax.Object("Outlook.Application");
   // var mail = con.CreateItem(0);
+  winClaims.webContents.send("fromChangeClaim", args);
 
-  fs.readFile("C:/data/scm/electron-omni/README.md", (error, data) => {
-    // Do something with file contents
-    let responseObj = {
-      error: error,
-      data: data.toString(),
-    };
+  // fs.readFile("C:/data/scm/electron-omni/README.md", (error, data) => {
+  //   // Do something with file contents
+  //   let responseObj = {
+  //     error: error,
+  //     data: data.toString(),
+  //   };
 
-    // Send result back to renderer process
-    setInterval(() => {
-      winClaims.webContents.send("fromMain", responseObj);
-    }, 2000);
-  });
+  //   // Send result back to renderer process
+  //   setInterval(() => {
+  //     winClaims.webContents.send("changeClaim", responseObj);
+  //   }, 2000);
+  // });
 });
 
 ipcMain;
